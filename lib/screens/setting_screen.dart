@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:hive/hive.dart';
+import 'package:spker_recognition/hive_util.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({Key? key}) : super(key: key);
@@ -19,20 +20,8 @@ class _SettingScreenState extends State<SettingScreen> {
     super.initState();
 
     Future.microtask(() async {
-      var box = Hive.box('settingBox');
-      var ip = box.get('ip') ?? '';
-      if (ip.toString().isEmpty) {
-        box.put('ip', '127.0.0.1');
-      }
-      ip = box.get('ip') ?? '';
-      _ipEditingController.text = ip.toString();
-
-      var port = box.get('port') ?? '';
-      if (port.toString().isEmpty) {
-        box.put('port', '9999');
-      }
-      port = box.get('port') ?? '';
-      _portEditingController.text = port.toString();
+      _ipEditingController.text = getServerIp();
+      _portEditingController.text = getServerPort();
     });
   }
 

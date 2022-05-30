@@ -9,8 +9,6 @@ import 'dart:io' as io;
 import 'dart:async';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_audio_recorder2/flutter_audio_recorder2.dart';
 import 'package:spker_recognition/screens/setting_screen.dart';
 
 class HomeScreen extends StatefulWidget {
