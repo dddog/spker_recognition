@@ -6,8 +6,6 @@ import 'package:spker_recognition/log_util.dart';
 import 'package:spker_recognition/screens/crilist_screen.dart';
 import 'package:spker_recognition/screens/request_screen.dart';
 import 'dart:io' as io;
-import 'dart:async';
-import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:spker_recognition/screens/setting_screen.dart';
 
@@ -95,11 +93,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<File> _stop() async {
+  Future<io.File> _stop() async {
     var result = await _recorder!.stop();
     logger.d("Stop recording: ${result!.path}");
     logger.d("Stop recording: ${result.duration}");
-    File file = localFileSystem.file(result.path);
+    io.File file = localFileSystem.file(result.path);
     // _recordFile = localFileSystem.file(result.path);
     logger.d("File length: ${await file.length()}");
     setState(() {
@@ -147,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () async {
                       logger.d('_isRecording>>>$_isRecording');
                       if (_isRecording) {
-                        File recordFile = await _stop();
+                        io.File recordFile = await _stop();
                         // ignore: use_build_context_synchronously
                         Navigator.push(
                           context,

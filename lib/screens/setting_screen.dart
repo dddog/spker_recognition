@@ -3,6 +3,7 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:hive/hive.dart';
 import 'package:spker_recognition/hive_util.dart';
+import 'package:spker_recognition/utils.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({Key? key}) : super(key: key);
@@ -64,6 +65,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     var box = Hive.box('settingBox');
                     box.put('ip', _ipEditingController.text.trim());
                     box.put('port', _portEditingController.text.trim());
+                    showSnackBar('저장 완료', context);
                   },
                   child: const Text('저장'),
                 ),

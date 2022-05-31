@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:spker_recognition/hive_util.dart';
 import 'package:spker_recognition/log_util.dart';
+import 'package:spker_recognition/screens/response_screen.dart';
 import 'package:spker_recognition/utils.dart';
 
 class RequestScreen extends StatefulWidget {
@@ -19,9 +20,9 @@ class RequestScreen extends StatefulWidget {
 }
 
 class _RequestScreenState extends State<RequestScreen> {
-  TextEditingController _textEditingController = TextEditingController();
-  bool _isSendInputDone = false;
+  final TextEditingController _textEditingController = TextEditingController();
   bool _isSendInputUploading = false;
+  bool _isRunningUploading = false;
   bool _isAddDataUploading = false;
 
   @override
@@ -50,9 +51,7 @@ class _RequestScreenState extends State<RequestScreen> {
 
   _sendInput() async {
     logger.d('send input start...');
-    setState(() {
-      _isSendInputDone = false;
-    });
+    setState(() {});
     try {
       var dio = Dio();
       var formData = FormData.fromMap({
@@ -68,9 +67,7 @@ class _RequestScreenState extends State<RequestScreen> {
       if (response.statusCode == 200) {
         logger.d(response.data['result']);
         if (response.data['result'] == 'success') {
-          setState(() {
-            _isSendInputDone = true;
-          });
+          setState(() {});
           showSnackBar('분석 완료', context);
         }
       } else {
@@ -83,7 +80,7 @@ class _RequestScreenState extends State<RequestScreen> {
   }
 
   _running() async {
-    logger.d('folderset start...');
+    logger.d('Running start...');
     try {
       var dio = Dio();
       var foldersetResponse = await dio.get(
@@ -91,17 +88,27 @@ class _RequestScreenState extends State<RequestScreen> {
       );
       logger.d('foldersetResponse>>>$foldersetResponse');
       if (foldersetResponse.statusCode == 200) {
-        // if(foldersetResponse.data)
-        logger.d('runnig start...');
-        var runningResponse = await dio.get(
-          'http://${getServerIp()}:${getServerPort()}/running',
-        );
-        logger.d('runningResponse>>>$runningResponse');
-        if (runningResponse.statusCode == 200) {}
+        if (foldersetResponse.data == 'done') {
+          // showSnackBar('Running 완료', context);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ResponseScreen(),
+            ),
+          );
+        } else {
+          showSnackBar('Running 실패', context);
+        }
+        // logger.d('runnig start...');
+        // var runningResponse = await dio.get(
+        //   'http://${getServerIp()}:${getServerPort()}/running',
+        // );
+        // logger.d('runningResponse>>>$runningResponse');
+        // if (runningResponse.statusCode == 200) {}
       }
     } catch (e) {
       logger.d(e);
-      showSnackBar('running error', context);
+      showSnackBar('Running error', context);
     }
   }
 
@@ -125,15 +132,11 @@ class _RequestScreenState extends State<RequestScreen> {
       );
       logger.d(response);
       if (response.statusCode == 200) {
-        if (response.data.toString().contains('파일 저장했습니다')) {
+        if (response.data['result'] == 'success') {
           showSnackBar('adddata 완료', context);
+        } else {
+          showSnackBar('adddata 실패', context);
         }
-        // if (response.data['result'] == 'success') {
-        //   setState(() {
-        //     _isSendInputDone = true;
-        //   });
-        //   showSnackBar('adddata 완료', context);
-        // }
       } else {
         showSnackBar('adddata error', context);
       }
@@ -200,9 +203,17 @@ class _RequestScreenState extends State<RequestScreen> {
                     height: 80,
                     width: double.maxFinite,
                     child: ElevatedButton(
-                      child: const Text('Running'),
+                      child: Text(
+                        _isRunningUploading ? 'Running 처리중...' : 'Running 시작',
+                      ),
                       onPressed: () async {
+                        setState(() {
+                          _isRunningUploading = true;
+                        });
                         await _running();
+                        setState(() {
+                          _isRunningUploading = false;
+                        });
                       },
                     ),
                   ),
