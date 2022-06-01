@@ -13,7 +13,11 @@ class CrilistScreen extends StatefulWidget {
 
 class _CrilistScreenState extends State<CrilistScreen> {
   bool _isCrilist = false;
+  bool _isFileLen = false;
   List<String> _crilist = [];
+  List<String> _filelen = [];
+
+  List<Cri> _dataList = [];
 
   @override
   void initState() {
@@ -33,17 +37,23 @@ class _CrilistScreenState extends State<CrilistScreen> {
       var response = await dio.get(
         'http://${getServerIp()}:${getServerPort()}/crilist',
       );
-      logger.d('response>>>$response');
+      logger.d('crilist response>>>$response');
       if (response.statusCode == 200) {
+        _crilist = response.data
+            .toString()
+            .replaceAll('[', '')
+            .replaceAll(']', '')
+            .replaceAll('\'', '')
+            .split(',');
+        logger.d('_crilist>>>$_crilist');
         setState(() {
-          _crilist = response.data
-              .toString()
-              .replaceAll('[', '')
-              .replaceAll(']', '')
-              .replaceAll('\'', '')
-              .split(',');
-          logger.d('_crilist>>>$_crilist');
+          for (var element in _crilist) {
+            _dataList.add(Cri(element, ''));
+          }
+          logger.d('cri datalist>>>${_dataList.map((e) => e.name)}');
         });
+
+        await _getFilelen();
       }
     } catch (e) {
       logger.d(e);
@@ -52,6 +62,48 @@ class _CrilistScreenState extends State<CrilistScreen> {
     } finally {
       setState(() {
         _isCrilist = false;
+      });
+    }
+  }
+
+  _getFilelen() async {
+    setState(() {
+      _isFileLen = true;
+    });
+    logger.d('_getFilelen start...');
+    try {
+      var dio = Dio();
+      var response = await dio.get(
+        'http://${getServerIp()}:${getServerPort()}/filelen',
+      );
+      logger.d('filelen response>>>$response');
+      if (response.statusCode == 200) {
+        _filelen = response.data
+            .toString()
+            .replaceAll('[', '')
+            .replaceAll(']', '')
+            .replaceAll('\'', '')
+            .split(',');
+        logger.d('_filelen>>>$_filelen');
+        setState(() {
+          if (_dataList.length == _filelen.length) {
+            for (int i = 0; i < _dataList.length; i++) {
+              _dataList[i].size = _filelen[i].trim();
+            }
+            logger.d(
+                'filelen datalist>>>${_dataList.map((e) => '${e.name}/${e.size}')}');
+          } else {
+            showSnackBar('등록된 사람과 파일길이의 수가 서로 다릅니다.', context);
+          }
+        });
+      }
+    } catch (e) {
+      logger.d(e);
+      // showAlertDialog('ERROR', '${e.toString()}', context);
+      showSnackBar('Filelen error', context);
+    } finally {
+      setState(() {
+        _isFileLen = false;
       });
     }
   }
@@ -66,27 +118,62 @@ class _CrilistScreenState extends State<CrilistScreen> {
             child: Column(
               children: [
                 Expanded(
-                  child: Container(
+                  child: SizedBox(
                     width: double.infinity,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        width: 1,
-                        color: Colors.grey,
-                      ),
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(
-                          30,
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              flex: 3,
+                              child: Container(
+                                width: double.infinity,
+                                height: 40,
+                                color: Colors.blue,
+                                child: const Center(
+                                  child: Text(
+                                    '등록된 인물 이름',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 4,
+                            ),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                width: double.infinity,
+                                height: 40,
+                                color: Colors.blue,
+                                child: const Center(
+                                  child: Text(
+                                    '등록된 파일 개수',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: _crilist
-                            .map((c) => Text(
-                                  c,
-                                ))
-                            .toList(),
-                      ),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        SingleChildScrollView(
+                          child: Column(
+                            children: _dataList
+                                .map(
+                                  (c) => _buildRow(c),
+                                )
+                                .toList(),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -110,4 +197,63 @@ class _CrilistScreenState extends State<CrilistScreen> {
       ),
     );
   }
+
+  Widget _buildRow(Cri c) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Flexible(
+              flex: 3,
+              child: Container(
+                width: double.infinity,
+                height: 40,
+                color: Colors.lightBlue.shade100,
+                child: Center(
+                  child: Text(
+                    c.name,
+                    style: const TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(
+              width: 4,
+            ),
+            Flexible(
+              flex: 2,
+              child: Container(
+                width: double.infinity,
+                height: 40,
+                color: Colors.lightBlue.shade100,
+                child: Center(
+                  child: Text(
+                    c.size,
+                    style: const TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(
+          height: 4,
+        ),
+      ],
+    );
+  }
+}
+
+class Cri {
+  String name = '';
+  String size = '';
+
+  Cri(
+    this.name,
+    this.size,
+  );
 }

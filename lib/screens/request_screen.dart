@@ -22,7 +22,7 @@ class RequestScreen extends StatefulWidget {
 class _RequestScreenState extends State<RequestScreen> {
   final TextEditingController _textEditingController = TextEditingController();
   bool _isSendInputUploading = false;
-  bool _isRunningUploading = false;
+
   bool _isAddDataUploading = false;
 
   @override
@@ -76,39 +76,6 @@ class _RequestScreenState extends State<RequestScreen> {
     } catch (e) {
       logger.d(e);
       showSnackBar('send input error', context);
-    }
-  }
-
-  _running() async {
-    logger.d('Running start...');
-    try {
-      var dio = Dio();
-      var foldersetResponse = await dio.get(
-        'http://${getServerIp()}:${getServerPort()}/folderset',
-      );
-      logger.d('foldersetResponse>>>$foldersetResponse');
-      if (foldersetResponse.statusCode == 200) {
-        if (foldersetResponse.data == 'done') {
-          // showSnackBar('Running 완료', context);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ResponseScreen(),
-            ),
-          );
-        } else {
-          showSnackBar('Running 실패', context);
-        }
-        // logger.d('runnig start...');
-        // var runningResponse = await dio.get(
-        //   'http://${getServerIp()}:${getServerPort()}/running',
-        // );
-        // logger.d('runningResponse>>>$runningResponse');
-        // if (runningResponse.statusCode == 200) {}
-      }
-    } catch (e) {
-      logger.d(e);
-      showSnackBar('Running error', context);
     }
   }
 
@@ -199,42 +166,38 @@ class _RequestScreenState extends State<RequestScreen> {
                   const SizedBox(
                     height: 20,
                   ),
-                  SizedBox(
-                    height: 80,
-                    width: double.maxFinite,
-                    child: ElevatedButton(
-                      child: Text(
-                        _isRunningUploading ? 'Running 처리중...' : 'Running 시작',
-                      ),
-                      onPressed: () async {
-                        setState(() {
-                          _isRunningUploading = true;
-                        });
-                        await _running();
-                        setState(() {
-                          _isRunningUploading = false;
-                        });
-                      },
-                    ),
-                  ),
                   const SizedBox(
                     height: 20,
                   ),
                   SizedBox(
-                    height: 80,
+                    height: 150,
                     width: double.maxFinite,
-                    child: ElevatedButton(
-                      child: Text(
-                        _isAddDataUploading ? '학습 데이터 보내는중...' : '학습 데이터 보내기',
-                      ),
-                      onPressed: () async {
-                        if (_textEditingController.text.isEmpty) {
-                          showSnackBar('파일 이름을 입력하세요.', context);
-                        } else {
-                          String fileName = _textEditingController.text.trim();
-                          await _addData(fileName);
-                        }
-                      },
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 80,
+                          width: double.maxFinite,
+                          child: ElevatedButton(
+                            child: Text(
+                              _isAddDataUploading
+                                  ? '학습 데이터 보내는중...'
+                                  : '학습 데이터 보내기',
+                            ),
+                            onPressed: () async {
+                              if (_textEditingController.text.isEmpty) {
+                                showSnackBar('파일 이름을 입력하세요.', context);
+                              } else {
+                                String fileName =
+                                    _textEditingController.text.trim();
+                                await _addData(fileName);
+                              }
+                            },
+                          ),
+                        ),
+                        const Text(
+                          '(학습 데이터는 적어도 10개이상 5초이상 넣어주세요)',
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(

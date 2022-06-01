@@ -1,13 +1,17 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_recorder2/flutter_audio_recorder2.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import 'package:spker_recognition/hive_util.dart';
 import 'package:spker_recognition/log_util.dart';
 import 'package:spker_recognition/screens/crilist_screen.dart';
 import 'package:spker_recognition/screens/request_screen.dart';
 import 'dart:io' as io;
 import 'package:file/local.dart';
+import 'package:spker_recognition/screens/response_screen.dart';
 import 'package:spker_recognition/screens/setting_screen.dart';
+import 'package:spker_recognition/utils.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -17,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _isRunningUploading = false;
   bool _isRecording = false;
   final _audioRecorder = Record();
   FlutterAudioRecorder2? _recorder;
@@ -106,11 +111,39 @@ class _HomeScreenState extends State<HomeScreen> {
     return file;
   }
 
+  _running() async {
+    logger.d('Running start...');
+    try {
+      var dio = Dio();
+      var foldersetResponse = await dio.get(
+        'http://${getServerIp()}:${getServerPort()}/folderset',
+      );
+      logger.d('foldersetResponse>>>$foldersetResponse');
+      if (foldersetResponse.statusCode == 200) {
+        if (foldersetResponse.data == 'done') {
+          // ignore: use_build_context_synchronously
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ResponseScreen(),
+            ),
+          );
+        } else {
+          // ignore: use_build_context_synchronously
+          showSnackBar('Running 실패', context);
+        }
+      }
+    } catch (e) {
+      logger.d(e);
+      showSnackBar('Running error', context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('범죄자 음성 분석'),
+        title: const Text('Speaker Recognition'),
         centerTitle: true,
         actions: [
           IconButton(
@@ -141,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 80,
                   width: double.maxFinite,
                   child: ElevatedButton(
-                    child: Text(_isRecording ? '본인마이크 녹음 중...' : '본인마이크 녹음 시작'),
+                    child: Text(_isRecording ? '마이크 녹음 중...' : '마이크 녹음'),
                     onPressed: () async {
                       logger.d('_isRecording>>>$_isRecording');
                       if (_isRecording) {
@@ -168,8 +201,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 80,
                   width: double.maxFinite,
                   child: ElevatedButton(
-                    child: const Text('상대마이크 녹음 시작'),
-                    onPressed: () {},
+                    child: Text(
+                      _isRunningUploading ? 'Running 처리중...' : 'Running 시작',
+                    ),
+                    onPressed: () async {
+                      setState(() {
+                        _isRunningUploading = true;
+                      });
+                      await _running();
+                      setState(() {
+                        _isRunningUploading = false;
+                      });
+                    },
                   ),
                 ),
                 const SizedBox(

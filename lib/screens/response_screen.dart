@@ -138,11 +138,30 @@ class _ResponseScreenState extends State<ResponseScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('데이터 등록여부 : '),
-                              Text(_isIndatabase ? '...' : _indatabase),
+                              const Text(
+                                '데이터 등록여부 : ',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  _isIndatabase
+                                      ? '...'
+                                      : (_indatabase == '0'
+                                          ? '저장된 데이터에 해당하는 사람이 없습니다'
+                                          : '저장된 데이터에 해당하는 사람이 있습니다'),
+                                  overflow: TextOverflow.clip,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(
@@ -150,8 +169,20 @@ class _ResponseScreenState extends State<ResponseScreen> {
                           ),
                           Row(
                             children: [
-                              const Text('이사람이 누구인지 : '),
-                              Text(_isCridetect ? '...' : _cridetect),
+                              const Text(
+                                '이사람이 누구인지 : ',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                ),
+                              ),
+                              Text(
+                                _isCridetect
+                                    ? '...'
+                                    : (_indatabase == '0' ? '' : _cridetect),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(
@@ -159,8 +190,22 @@ class _ResponseScreenState extends State<ResponseScreen> {
                           ),
                           Row(
                             children: [
-                              const Text('일치율 : '),
-                              Text(_isVoiceAccuracy ? '...' : _voiceAccuracy),
+                              const Text(
+                                '일치율 : ',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                ),
+                              ),
+                              Text(
+                                _isVoiceAccuracy
+                                    ? '...'
+                                    : (_indatabase == '0'
+                                        ? ''
+                                        : _voiceAccuracy),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                ),
+                              ),
                             ],
                           ),
                         ],
