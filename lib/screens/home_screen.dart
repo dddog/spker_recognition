@@ -122,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (foldersetResponse.statusCode == 200) {
         if (foldersetResponse.data == 'done') {
           // ignore: use_build_context_synchronously
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => const ResponseScreen(),
