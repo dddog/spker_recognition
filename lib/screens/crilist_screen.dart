@@ -164,13 +164,16 @@ class _CrilistScreenState extends State<CrilistScreen> {
                         const SizedBox(
                           height: 4,
                         ),
-                        SingleChildScrollView(
-                          child: Column(
-                            children: _dataList
-                                .map(
-                                  (c) => _buildRow(c),
-                                )
-                                .toList(),
+                        Flexible(
+                          flex: 1,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: _dataList
+                                  .map(
+                                    (c) => _buildRow(c),
+                                  )
+                                  .toList(),
+                            ),
                           ),
                         ),
                       ],
